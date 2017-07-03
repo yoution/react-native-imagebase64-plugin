@@ -1,5 +1,5 @@
-
-let origTransformer = require('./node_modules/react-native/packager/transformer')
+let fs = require('fs');
+let origTransformer = require('./node_modules/react-native/packager/transformer');
 
 
 function getSvgBase64(src) {
@@ -11,9 +11,21 @@ function getSvgBase64(src) {
 function transform(src, fileName, options) {
 
   if (/svg$/.test(fileName)) {
+    //src为utf-8格式，需要重新读取
+    var src = fs.readFileSync(fileName);
     var code = getSvgBase64(src);
     // console.log('svg...........',code, src ,fileName,options);
-    return origTransformer.transform(code, fileName, options);
+    try{
+      return origTransformer.transform(code, fileName, options);
+    }catch(e) {
+      //git图片有bug
+      return {
+        ast: null,
+        code: code,
+        fileName: fileName,
+        map: null
+      }
+    }
   }else {
     return origTransformer.transform(src, fileName, options);
   }
